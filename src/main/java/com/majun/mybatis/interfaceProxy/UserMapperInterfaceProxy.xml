@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--通过接口代理开发数据库-->
+<mapper namespace="com.majun.mybatis.interfaceProxy.UserMapperInterfaceProxy">
+    <!--sql片段-->
+    <sql id="userSql">
+       select id,username,birthday,sex,address
+    </sql>
+    <!--动态sql,通过id或者address来查询-->
+    <select id="queryUserList" parameterType="queryVo" resultType="user" >
+        <include refid="userSql"/> from user
+        <where>
+            <if test="user.id != null and user.id != '' ">
+                and id = ${user.id}
+            </if>
+            <if test="user.address != null and user.address != '' ">
+                and address like '%${user.address}%'
+            </if>
+        </where>
+    </select>
+    <!--动态sql，查询多个id的用户信息，使用foreach-->
+    <select id="queryUserIds" parameterType="queryVo" resultType="user">
+        <include refid="userSql"/> from user
+        <where>
+            <foreach collection="ids" open=" and id in (" close=")" separator="," item="id">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+    
+    <!--根据id查询-->
+    <select id="findUser" parameterType="int" resultType="user">
+        <include refid="userSql"/> from user where id =#{id}
+    </select>
+    <!--根据地址进行模糊查询-->
+    <select id="getUserByAddress" parameterType="string" resultType="user">
+        <include refid="userSql"/> from user where address like '%${value}%'
+    </select>
+    <!--插入数据-->
+    <insert id="addUser" parameterType="user">
+        insert into user (username,birthday,sex,address) values(#{username},#{birthday},#{sex},#{address})
+    </insert>
+    <!--更新数据-->
+    <update id="updateUser" parameterType="user" >
+        update user set address = #{address} where id = #{id}
+    </update>
+    <!--删除数据-->
+    <delete id="deleteUser" parameterType="int">
+        delete from user where id = #{id}
+    </delete>
+    <!--根据地址进行模糊查询-->
+    <select id="getUserList" parameterType="queryVo" resultType="user">
+        <include refid="userSql"/> from user where address like '%${user.address}%'
+    </select>
+    <!--获取用户总数-->
+    <select id="getuserTotal" resultType="int">
+        select count(1) from user
+    </select>
+</mapper>

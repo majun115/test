@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--通过接口代理开发数据库-->
+<mapper namespace="com.majun.mybatis.connectQuery.UserMapperInterface">
+    <resultMap id="UserJoinOrders" type="user">
+        <!-- 先定义user表中的所有字段属性 -->
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="birthday" property="birthday"/>
+        <result column="sex" property="sex"/>
+        <result column="address" property="address"/>
+        <!-- 一对多的时候，通过collection来进行表示
+  			在我们一对一关联查询的时候使用的是JavaType
+  			在我们一对多的关联查询的时候，一定要使用ofType
+  		-->
+        <collection property="ordersList" ofType="com.majun.mybatis.pojo.Orders">
+            <result column="user_id" property="userId"/>
+            <result column="number" property="number"/>
+            <result column="createtime" property="createtime"/>
+            <result column="note" property="note"/>
+        </collection>
+    </resultMap>
+    <!--一对多查询，查询用户下过得订单-->
+    <select id="queryUserListJoinOrders" resultMap="UserJoinOrders">
+        select * from user myuser left join orders myord on myuser.id = myord.user_id
+    </select>
+</mapper>

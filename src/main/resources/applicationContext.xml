@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 通过context:component-scan来开启我们的注解，表示我们需要扫描哪个包下面的所有的注解， -->
+   <!-- <context:component-scan base-package="com.majun.Spring.springServlet"/>-->
+
+
+    <!--第一种方式创建对象，-->
+   <bean id="userService" class="com.majun.Spring.springContainer.UserServiceImp">
+        <!--第一种赋值方式di，通过默认的构造器-->
+        <property name="userName" value="李一桐"/>
+    </bean>
+    <!--第二种方式创建对象，通过静态工厂类-->
+    <bean id="userServiceImp1" class="com.majun.Spring.springContainer.UserServiceImp" c:userName="李沁">
+       <!--第二种赋值方式di，通过自建的构造器-->
+        <!--<constructor-arg name="userName" value="李沁"/>-->
+    </bean>
+    <!--第三种方式创建对象，通过实例工厂创建对象-->
+    <!--创建工厂对象-->
+    <bean id="beanFactory" class="com.majun.Spring.springContainer.BeanFactory"/>
+    <bean id="userServiceImp" class="com.majun.Spring.springContainer.UserServiceImp"
+          factory-bean="beanFactory" factory-method="getUser1" p:userName="李一桐">
+        <!--第三种赋值方式di，通过p名称空间和c命名空间-->
+        <!--<property name="userName" value="陈瑶"/>-->
+    </bean>
+</beans>
