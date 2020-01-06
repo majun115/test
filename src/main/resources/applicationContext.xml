@@ -4,11 +4,44 @@
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:c="http://www.springframework.org/schema/c"
        xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <!-- 通过context:component-scan来开启我们的注解，表示我们需要扫描哪个包下面的所有的注解， -->
-   <!-- <context:component-scan base-package="com.majun.Spring.springServlet"/>-->
+    <context:component-scan base-package="com.majun.Spring"/>
+    <!-- 开启我们使用注解的方式来实现我们的AOP切面编程 -->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 
+    <!--通过xml开发aop-->
+    <!--声明目标类-->
+    <bean id="orderInterface" class="com.majun.Spring.aop.OrderInterfaceImp"/>
+    <!--声明切面类-->
+    <bean id="orderInterfaceStrong" class="com.majun.Spring.aop.OrderInterfaceStrong"/>
+    <!--通过xml配置的方式实现我们的增强-->
+    <aop:config>
+        <!--声明切入点-->
+        <aop:pointcut id="pointcut1" expression="execution(* com.majun.Spring.aop.OrderInterfaceImp.add(..))"/>
+        <aop:pointcut id="pointcut2" expression="execution(* *.delete(..))"/>
+        <aop:pointcut id="pointcut3" expression="execution(* *.update(..))"/>
+        <aop:pointcut id="pointcut4" expression="execution(* *.find(..))"/>
+        <aop:pointcut id="pointcut5" expression="execution(* *.batch(..))"/>
+
+        <!--声明切面-->
+        <aop:aspect ref="orderInterfaceStrong">
+            <!--前置通知 aop：before表示增强方法需要在切入点方法执行前执行-->
+            <aop:before method="checkPrivileg" pointcut-ref="pointcut1"/>
+            <!--后置通知-->
+            <aop:after-returning method="afterStrong" pointcut-ref="pointcut2" returning="object"/>
+            <!--环绕通知-->
+            <aop:around method="aroundStrong" pointcut-ref="pointcut3"/>
+            <!--异常处理通知-->
+            <aop:after-throwing method="exceptStrong" pointcut-ref="pointcut4" throwing="throwable"/>
+            <!--最终通知-->
+            <aop:after method="finalStrong" pointcut-ref="pointcut5"/>
+        </aop:aspect>
+    </aop:config>
 
     <!--第一种方式创建对象，-->
    <bean id="userService" class="com.majun.Spring.springContainer.UserServiceImp">
