@@ -5,60 +5,105 @@
        xmlns:c="http://www.springframework.org/schema/c"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <!-- 通过context:component-scan来开启我们的注解，表示我们需要扫描哪个包下面的所有的注解， -->
-    <context:component-scan base-package="com.majun.Spring"/>
+    <context:component-scan base-package="com.majun.Spring.transaction.*"/>
     <!-- 开启我们使用注解的方式来实现我们的AOP切面编程 -->
     <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 
-    <!--通过xml开发aop-->
-    <!--声明目标类-->
+    <!--配置spring自带的数据库连接池-->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/mybatis?characterEncoding=utf-8"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123"/>
+    </bean>
+    <!--创建jdbcTemplate对象用于操作数据库-->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--事务转账,添加事务管理类-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- 用于判断是哪个数据源,因为不同的数据源的默认事务级别不一致,如Oracle和Mysql -->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--（编程式事务控制）声明事务的模板-->
+   <!-- <bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="transactionManager"/>
+    </bean>-->
+    <!--申明式事务管理，通过xml配置的方式实现-->
+    <!-- 申明我们的事务管理专用的通知，这一个申明，相当于环绕通知和异常抛出通知的组合效果 -->
+  <!--  <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="transferMoney" propagation="REQUIRED"/>
+            <tx:method name="update*"/>
+            <tx:method name="insert*"/>
+            <tx:method name="delete*"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config >
+        <aop:pointcut id="pointCat" expression="execution(* *.transfer*(..))"/>
+        &lt;!&ndash;一个连接点 和一个通知的组合&ndash;&gt;
+        &lt;!&ndash; aop:advisor这个也是切面，一个切入点和一个通知的组合     aop:aspect也是切面，只不过是多个切入点和多个通知的组合 &ndash;&gt;
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointCat"/>
+    </aop:config>-->
+
+    <!-- 通过注解的方式来开启我们的控制 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+
+    <!--&lt;!&ndash;通过xml开发aop&ndash;&gt;
+    &lt;!&ndash;声明目标类&ndash;&gt;
     <bean id="orderInterface" class="com.majun.Spring.aop.OrderInterfaceImp"/>
-    <!--声明切面类-->
+    &lt;!&ndash;声明切面类&ndash;&gt;
     <bean id="orderInterfaceStrong" class="com.majun.Spring.aop.OrderInterfaceStrong"/>
-    <!--通过xml配置的方式实现我们的增强-->
+    &lt;!&ndash;通过xml配置的方式实现我们的增强&ndash;&gt;
     <aop:config>
-        <!--声明切入点-->
+        &lt;!&ndash;声明切入点&ndash;&gt;
         <aop:pointcut id="pointcut1" expression="execution(* com.majun.Spring.aop.OrderInterfaceImp.add(..))"/>
         <aop:pointcut id="pointcut2" expression="execution(* *.delete(..))"/>
         <aop:pointcut id="pointcut3" expression="execution(* *.update(..))"/>
         <aop:pointcut id="pointcut4" expression="execution(* *.find(..))"/>
         <aop:pointcut id="pointcut5" expression="execution(* *.batch(..))"/>
 
-        <!--声明切面-->
+        &lt;!&ndash;声明切面&ndash;&gt;
         <aop:aspect ref="orderInterfaceStrong">
-            <!--前置通知 aop：before表示增强方法需要在切入点方法执行前执行-->
+            &lt;!&ndash;前置通知 aop：before表示增强方法需要在切入点方法执行前执行&ndash;&gt;
             <aop:before method="checkPrivileg" pointcut-ref="pointcut1"/>
-            <!--后置通知-->
+            &lt;!&ndash;后置通知&ndash;&gt;
             <aop:after-returning method="afterStrong" pointcut-ref="pointcut2" returning="object"/>
-            <!--环绕通知-->
+            &lt;!&ndash;环绕通知&ndash;&gt;
             <aop:around method="aroundStrong" pointcut-ref="pointcut3"/>
-            <!--异常处理通知-->
+            &lt;!&ndash;异常处理通知&ndash;&gt;
             <aop:after-throwing method="exceptStrong" pointcut-ref="pointcut4" throwing="throwable"/>
-            <!--最终通知-->
+            &lt;!&ndash;最终通知&ndash;&gt;
             <aop:after method="finalStrong" pointcut-ref="pointcut5"/>
         </aop:aspect>
     </aop:config>
 
-    <!--第一种方式创建对象，-->
+    &lt;!&ndash;第一种方式创建对象，&ndash;&gt;
    <bean id="userService" class="com.majun.Spring.springContainer.UserServiceImp">
-        <!--第一种赋值方式di，通过默认的构造器-->
+        &lt;!&ndash;第一种赋值方式di，通过默认的构造器&ndash;&gt;
         <property name="userName" value="李一桐"/>
     </bean>
-    <!--第二种方式创建对象，通过静态工厂类-->
+    &lt;!&ndash;第二种方式创建对象，通过静态工厂类&ndash;&gt;
     <bean id="userServiceImp1" class="com.majun.Spring.springContainer.UserServiceImp" c:userName="李沁">
-       <!--第二种赋值方式di，通过自建的构造器-->
-        <!--<constructor-arg name="userName" value="李沁"/>-->
+       &lt;!&ndash;第二种赋值方式di，通过自建的构造器&ndash;&gt;
+        &lt;!&ndash;<constructor-arg name="userName" value="李沁"/>&ndash;&gt;
     </bean>
-    <!--第三种方式创建对象，通过实例工厂创建对象-->
-    <!--创建工厂对象-->
+    &lt;!&ndash;第三种方式创建对象，通过实例工厂创建对象&ndash;&gt;
+    &lt;!&ndash;创建工厂对象&ndash;&gt;
     <bean id="beanFactory" class="com.majun.Spring.springContainer.BeanFactory"/>
     <bean id="userServiceImp" class="com.majun.Spring.springContainer.UserServiceImp"
           factory-bean="beanFactory" factory-method="getUser1" p:userName="李一桐">
-        <!--第三种赋值方式di，通过p名称空间和c命名空间-->
-        <!--<property name="userName" value="陈瑶"/>-->
-    </bean>
+        &lt;!&ndash;第三种赋值方式di，通过p名称空间和c命名空间&ndash;&gt;
+        &lt;!&ndash;<property name="userName" value="陈瑶"/>&ndash;&gt;
+    </bean>-->
 </beans>
