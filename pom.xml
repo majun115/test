@@ -154,7 +154,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!--io流-->
+    <!--文件上传io流-->
     <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
     <dependency>
       <groupId>commons-io</groupId>
@@ -224,7 +224,7 @@
   </dependencies>
 
   <build>
-    <!--配置xml文件的映射路径-->
+    <!--maven项目配置xml文件的映射路径-->
     <resources>
       <resource>
         <directory>src/main/java</directory>
